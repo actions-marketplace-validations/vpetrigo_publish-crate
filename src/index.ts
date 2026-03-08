@@ -26,7 +26,7 @@ export async function checkForModifiedPackages(
 
     await exec.exec(
         cargo,
-        ["workspaces", "changed"],
+        ["workspaces", "changed", "--error-on-empty"],
         options
     );
 
