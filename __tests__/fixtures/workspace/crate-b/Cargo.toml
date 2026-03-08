@@ -1,0 +1,9 @@
+[package]
+name = "publish-crates-test-crate-b"
+version = "0.1.0"
+edition = "2021"
+description = "Test fixture: workspace crate B (depends on crate-a)"
+license = "MIT"
+
+[dependencies]
+publish-crates-test-crate-a = { version = "0.1.0", path = "../crate-a" }

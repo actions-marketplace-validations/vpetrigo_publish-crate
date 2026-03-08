@@ -1,0 +1,6 @@
+[package]
+name = "publish-crates-test-crate-a"
+version = "0.1.0"
+edition = "2021"
+description = "Test fixture: workspace crate A"
+license = "MIT"
