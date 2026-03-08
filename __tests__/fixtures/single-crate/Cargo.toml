@@ -1,0 +1,6 @@
+[package]
+name = "publish-crates-test-single"
+version = "0.1.0"
+edition = "2021"
+description = "Test fixture: standalone crate for integration tests"
+license = "MIT"
