@@ -53,7 +53,7 @@ function simulateChangedListOutput(output: string): void {
                 args &&
                 args.includes("workspaces") &&
                 args.includes("changed") &&
-                args.includes("list")
+                args.includes("--error-on-empty")
             ) {
                 if (options?.listeners?.stdout) {
                     options.listeners.stdout(Buffer.from(output));
@@ -144,7 +144,7 @@ describe("checkForModifiedPackages", () => {
 
         expect(mockedExec.exec).toHaveBeenCalledWith(
             "/usr/bin/cargo",
-            ["workspaces", "changed", "list"],
+            ["workspaces", "changed", "--error-on-empty"],
             expect.objectContaining({cwd: "/my/workspace"})
         );
     });
