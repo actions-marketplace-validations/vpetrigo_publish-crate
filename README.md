@@ -21,13 +21,13 @@ A GitHub Action to publish Rust crates using [`cargo-workspaces`](https://github
 
 | Name                         | Required | Default | Description                                                                 |
 | ---------------------------- | -------- | ------- | --------------------------------------------------------------------------- |
-| `token`                      | Yes      | -       | GitHub API token                                                            |
+| `token`                      | No       | -       | GitHub API token                                                            |
 | `path`                       | No       | `.`     | Path to crate or workspace                                                  |
-| `registry-token`             | Yes      | —       | Cargo registry token for authentication                                     |
+| `registry-token`             | No       | -       | Cargo registry token for authentication                                     |
 | `args`                       | No       | -       | Extra arguments passed to `cargo publish`                                   |
 | `dry-run`                    | No       | `false` | If `true`, performs a dry run without publishing                            |
 | `check-repo`                 | No       | `true`  | If `true`, checks whether packages have changed since last publish          |
-| `publish-delay`              | No       | —       | Delay in milliseconds between publishing each crate                         |
+| `publish-delay`              | No       | -       | Delay in milliseconds between publishing each crate                         |
 | `no-verify`                  | No       | `false` | If `true`, passes `--no-verify` to skip packaging verification              |
 | `ignore-unpublished-changes` | No       | `false` | If `true`, exits gracefully when no changes are detected instead of failing |
 
