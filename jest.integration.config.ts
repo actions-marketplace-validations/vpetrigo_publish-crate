@@ -8,6 +8,9 @@ const config: Config = {
   testTimeout: 120000,
   clearMocks: true,
   restoreMocks: true,
+  transform: {
+    "^.+\\.tsx?$": ["ts-jest", { tsconfig: "tsconfig.test.json" }],
+  },
 };
 
 export default config;

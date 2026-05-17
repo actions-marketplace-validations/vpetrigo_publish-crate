@@ -7,6 +7,9 @@ const config: Config = {
   testMatch: ["**/__tests__/*.test.ts"],
   clearMocks: true,
   restoreMocks: true,
+  transform: {
+    "^.+\\.tsx?$": ["ts-jest", { tsconfig: "tsconfig.test.json" }],
+  },
 };
 
 export default config;
