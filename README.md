@@ -1,3 +1,8 @@
+[![Build](https://github.com/vpetrigo/publish-crate/actions/workflows/test.yml/badge.svg)](https://github.com/vpetrigo/publish-crate/actions/workflows/test.yml)
+![GitHub package.json version](https://img.shields.io/github/package-json/v/vpetrigo/publish-crate)
+![GitHub License](https://img.shields.io/github/license/vpetrigo/publish-crate)
+[![Bun Compatible](https://img.shields.io/badge/Bun-Compatible-F472B6?style=flat&logo=bun&logoColor=white)](https://bun.sh)
+
 # Publish Crates
 
 A GitHub Action to publish Rust crates using [`cargo-workspaces`](https://github.com/pksunkara/cargo-workspaces).
