@@ -1,4 +1,5 @@
-name: "Build And Test"
+name: Build
+run-name: Build And Test
 
 on: # rebuild any PRs and main branch changes
   pull_request:
