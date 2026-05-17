@@ -1,4 +1,4 @@
-name: "build-test"
+name: "Build And Test"
 
 on: # rebuild any PRs and main branch changes
   pull_request:
@@ -7,7 +7,29 @@ on: # rebuild any PRs and main branch changes
       - main
 
 jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install node dependencies
+        run: npm install
+      - name: Run tests
+        run: npm run test
+
+  integration-test:
+    name: Run integration tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install node dependencies
+        run: npm install
+      - name: Run tests
+        run: npm run test:integration
+
   build: # make sure build/ci work properly
+    name: Build Actions executable
+    needs: [test, test-integration]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -25,10 +47,10 @@ jobs:
           name: dist
           path: dist
 
-  test: # make sure the action works on a clean machine without building
+  action-test: # make sure the action works on a clean machine without building
+    name: Test Actions
     runs-on: ubuntu-latest
-    needs:
-      - build
+    needs: build
     steps:
       - uses: actions/checkout@v6
       - name: Download dist
@@ -39,6 +61,6 @@ jobs:
       - name: Run tests
         uses: ./
         with:
-          path: __tests__
+          path: __tests__/fixtures/single-crate
           dry-run: true
           check-repo: ${{ github.event_name == 'push' }}
