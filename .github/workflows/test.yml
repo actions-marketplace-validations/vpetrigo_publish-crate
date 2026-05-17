@@ -12,20 +12,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
       - name: Install node dependencies
-        run: npm install
+        run: bun install -d
       - name: Run tests
-        run: npm run test
+        run: bun run test
 
   integration-test:
     name: Run integration tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
       - name: Install node dependencies
-        run: npm install
+        run: bun install -d
       - name: Run tests
-        run: npm run test:integration
+        run: bun run test:integration
 
   build: # make sure build/ci work properly
     name: Build Actions executable
@@ -33,14 +35,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
       - name: Install node dependencies
         run: |
-          npm install
-      - name: Build dist and run tests
+          bun install
+      - name: Build dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          npm run build
+        run: bun run build
       - name: Upload dist
         uses: actions/upload-artifact@v7
         with:
