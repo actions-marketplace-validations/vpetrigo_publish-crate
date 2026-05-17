@@ -8,9 +8,6 @@ await build({
   outfile: "dist/index.js",
   sourcemap: true,
   sourcesContent: false,
-  banner: {
-    js: 'require("source-map-support").install();',
-  },
   plugins: [
     esbuildPluginLicense({
       thirdParty: {
