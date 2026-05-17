@@ -140,6 +140,6 @@ export async function run(): Promise<void> {
     }
 }
 
-if (!process.env.JEST_WORKER_ID) {
+if (!process.env.JEST_WORKER_ID && !process.env.BUN_TEST) {
     run();
 }
