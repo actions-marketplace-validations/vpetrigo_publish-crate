@@ -1,3 +1,19 @@
+jest.mock("@actions/core", () => ({
+    getInput: jest.fn(() => ""),
+    getBooleanInput: jest.fn(() => false),
+    info: jest.fn(),
+    exportVariable: jest.fn(),
+    setFailed: jest.fn(),
+}));
+
+jest.mock("@actions/exec", () => ({
+    exec: jest.fn(async () => 0),
+}));
+
+jest.mock("@actions/io", () => ({
+    which: jest.fn(async () => "/usr/bin/cargo"),
+}));
+
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as io from "@actions/io";
@@ -5,13 +21,21 @@ import * as path from "path";
 
 import {install, checkForModifiedPackages, run} from "../src";
 
-jest.mock("@actions/core");
-jest.mock("@actions/exec");
-jest.mock("@actions/io");
+type MockedModule<T> = {
+    [K in keyof T]: T[K] extends (...args: infer A) => infer R
+        ? ReturnType<typeof jest.fn<A, Promise<R>>> | ReturnType<typeof jest.fn<A, R>>
+        : T[K];
+};
 
-const mockedCore = jest.mocked(core);
-const mockedExec = jest.mocked(exec);
-const mockedIo = jest.mocked(io);
+const mockedCore = core as unknown as MockedModule<typeof core>;
+const mockedExec = exec as unknown as MockedModule<typeof exec>;
+const mockedIo = io as unknown as MockedModule<typeof io>;
+
+beforeEach(() => {
+    jest.resetAllMocks();
+    mockedCore.getBooleanInput.mockImplementation(() => false);
+    mockedCore.getInput.mockImplementation(() => "");
+});
 
 function mockInputs(overrides: Record<string, string> = {}): void {
     const defaults: Record<string, string> = {
@@ -171,7 +195,7 @@ describe("run", () => {
         args: string[] | undefined;
         options: exec.ExecOptions | undefined;
     }> {
-        return mockedExec.exec.mock.calls.map((call) => ({
+        return (mockedExec.exec as any).mock.calls.map((call: any[]) => ({
             command: call[0] as string,
             args: call[1] as string[] | undefined,
             options: call[2] as exec.ExecOptions | undefined,
@@ -563,6 +587,9 @@ describe("run", () => {
         it("calls setFailed with generic message for non-Error throws", async () => {
             mockedCore.getInput.mockImplementation(() => {
                 throw "string error";
+            });
+            mockedCore.getBooleanInput.mockImplementation(() => {
+                throw new TypeError("mocked");
             });
 
             await run();
