@@ -29,7 +29,7 @@ jobs:
 
   build: # make sure build/ci work properly
     name: Build Actions executable
-    needs: [test, test-integration]
+    needs: [test, integration-test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
