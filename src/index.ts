@@ -4,9 +4,17 @@ import * as io from "@actions/io";
 import * as path from "path";
 
 export async function install(): Promise<string> {
-    await exec.exec("cargo", ["install", "cargo-workspaces"]);
+    const cargoPath = await io.which("cargo", true);
 
-    return io.which("cargo", true);
+    try {
+        await exec.exec(cargoPath, ["workspaces", "--version"], {
+            silent: true,
+        });
+        return cargoPath;
+    } catch {
+        await exec.exec(cargoPath, ["install", "cargo-workspaces"]);
+        return io.which("cargo", true);
+    }
 }
 
 export async function checkForModifiedPackages(
@@ -140,6 +148,6 @@ export async function run(): Promise<void> {
     }
 }
 
-if (!process.env.JEST_WORKER_ID) {
+if (!process.env.JEST_WORKER_ID && !process.env.BUN_TEST) {
     run();
 }

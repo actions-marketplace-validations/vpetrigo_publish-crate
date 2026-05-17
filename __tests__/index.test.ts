@@ -1,3 +1,19 @@
+jest.mock("@actions/core", () => ({
+    getInput: jest.fn(() => ""),
+    getBooleanInput: jest.fn(() => false),
+    info: jest.fn(),
+    exportVariable: jest.fn(),
+    setFailed: jest.fn(),
+}));
+
+jest.mock("@actions/exec", () => ({
+    exec: jest.fn(async () => 0),
+}));
+
+jest.mock("@actions/io", () => ({
+    which: jest.fn(async () => "/usr/bin/cargo"),
+}));
+
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as io from "@actions/io";
@@ -5,13 +21,21 @@ import * as path from "path";
 
 import {install, checkForModifiedPackages, run} from "../src";
 
-jest.mock("@actions/core");
-jest.mock("@actions/exec");
-jest.mock("@actions/io");
+type MockedModule<T> = {
+    [K in keyof T]: T[K] extends (...args: infer A) => infer R
+        ? ReturnType<typeof jest.fn<A, Promise<R>>> | ReturnType<typeof jest.fn<A, R>>
+        : T[K];
+};
 
-const mockedCore = jest.mocked(core);
-const mockedExec = jest.mocked(exec);
-const mockedIo = jest.mocked(io);
+const mockedCore = core as unknown as MockedModule<typeof core>;
+const mockedExec = exec as unknown as MockedModule<typeof exec>;
+const mockedIo = io as unknown as MockedModule<typeof io>;
+
+beforeEach(() => {
+    jest.resetAllMocks();
+    mockedCore.getBooleanInput.mockImplementation(() => false);
+    mockedCore.getInput.mockImplementation(() => "");
+});
 
 function mockInputs(overrides: Record<string, string> = {}): void {
     const defaults: Record<string, string> = {
@@ -65,21 +89,55 @@ function simulateChangedListOutput(output: string): void {
 }
 
 describe("install", () => {
-    it("runs cargo install cargo-workspaces and returns cargo path", async () => {
+    it("skips install when cargo-workspaces is already available", async () => {
         mockedExec.exec.mockResolvedValue(0);
         mockedIo.which.mockResolvedValue("/usr/bin/cargo");
 
         const result = await install();
 
-        expect(mockedExec.exec).toHaveBeenCalledWith("cargo", [
-            "install",
-            "cargo-workspaces",
-        ]);
+        expect(mockedExec.exec).toHaveBeenCalledWith("/usr/bin/cargo", [
+            "workspaces",
+            "--version",
+        ], {
+            silent: true,
+        });
+        expect(mockedExec.exec).not.toHaveBeenCalledWith(
+            expect.any(String),
+            ["install", "cargo-workspaces"],
+            expect.any(Object)
+        );
         expect(mockedIo.which).toHaveBeenCalledWith("cargo", true);
         expect(result).toBe("/usr/bin/cargo");
     });
 
-    it("propagates exec errors", async () => {
+    it("installs cargo-workspaces when not available and returns cargo path", async () => {
+        let callCount = 0;
+        mockedExec.exec.mockImplementation(async () => {
+            callCount++;
+            if (callCount === 1) {
+                throw new Error("not installed");
+            }
+            return 0;
+        });
+        mockedIo.which.mockResolvedValue("/usr/bin/cargo");
+
+        const result = await install();
+
+        expect(mockedExec.exec).toHaveBeenCalledWith("/usr/bin/cargo", [
+            "workspaces",
+            "--version",
+        ], {
+            silent: true,
+        });
+        expect(mockedExec.exec).toHaveBeenCalledWith("/usr/bin/cargo", [
+            "install",
+            "cargo-workspaces",
+        ]);
+        expect(mockedIo.which).toHaveBeenCalledTimes(2);
+        expect(result).toBe("/usr/bin/cargo");
+    });
+
+    it("propagates errors when cargo-workspaces check and install both fail", async () => {
         mockedExec.exec.mockRejectedValue(new Error("cargo not found"));
 
         await expect(install()).rejects.toThrow("cargo not found");
@@ -171,7 +229,7 @@ describe("run", () => {
         args: string[] | undefined;
         options: exec.ExecOptions | undefined;
     }> {
-        return mockedExec.exec.mock.calls.map((call) => ({
+        return (mockedExec.exec as any).mock.calls.map((call: any[]) => ({
             command: call[0] as string,
             args: call[1] as string[] | undefined,
             options: call[2] as exec.ExecOptions | undefined,
@@ -190,12 +248,29 @@ describe("run", () => {
 
     describe("basic publish flow", () => {
         it("installs cargo-workspaces and publishes with default args", async () => {
-            simulateChangedListOutput("my-crate\n");
+            let callCount = 0;
+            mockedExec.exec.mockImplementation(async (cmd, args, options) => {
+                if (args && args.includes("workspaces") && args.includes("--version")) {
+                    throw new Error("not installed");
+                }
+                if (
+                    args &&
+                    args.includes("workspaces") &&
+                    args.includes("changed") &&
+                    args.includes("--error-on-empty")
+                ) {
+                    if (options?.listeners?.stdout) {
+                        options.listeners.stdout(Buffer.from("my-crate\n"));
+                    }
+                }
+                callCount++;
+                return 0;
+            });
             mockInputs();
 
             await run();
 
-            expect(mockedExec.exec).toHaveBeenCalledWith("cargo", [
+            expect(mockedExec.exec).toHaveBeenCalledWith("/usr/bin/cargo", [
                 "install",
                 "cargo-workspaces",
             ]);
@@ -563,6 +638,9 @@ describe("run", () => {
         it("calls setFailed with generic message for non-Error throws", async () => {
             mockedCore.getInput.mockImplementation(() => {
                 throw "string error";
+            });
+            mockedCore.getBooleanInput.mockImplementation(() => {
+                throw new TypeError("mocked");
             });
 
             await run();

@@ -7,9 +7,21 @@ import { exec } from "@actions/exec";
 import * as io from "@actions/io";
 import { install, checkForModifiedPackages, run } from "../../src";
 
-jest.mock("@actions/core");
+jest.mock("@actions/core", () => ({
+    getInput: jest.fn(),
+    getBooleanInput: jest.fn(),
+    info: jest.fn(),
+    exportVariable: jest.fn(),
+    setFailed: jest.fn(),
+}));
 
-const mockedCore = jest.mocked(core);
+type MockedModule<T> = {
+    [K in keyof T]: T[K] extends (...args: infer A) => infer R
+        ? ReturnType<typeof jest.fn<A, Promise<R>>> | ReturnType<typeof jest.fn<A, R>>
+        : T[K];
+};
+
+const mockedCore = core as unknown as MockedModule<typeof core>;
 
 const tempDirs: string[] = [];
 
@@ -108,7 +120,7 @@ describe("run end-to-end", () => {
     }
 
     beforeEach(() => {
-        jest.clearAllMocks();
+        jest.resetAllMocks();
     });
 
     it("run() with dry-run completes without setFailed for workspace", async () => {
