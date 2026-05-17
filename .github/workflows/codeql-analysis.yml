@@ -8,7 +8,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: '31 7 * * 3'
+    - cron: "31 7 * * 3"
 
 permissions:
   actions: read
@@ -36,7 +36,6 @@ jobs:
         id: initialize
         uses: github/codeql-action/init@v4
         with:
-          config-file: .github/codeql/codeql-config.yml
           languages: ${{ matrix.language }}
           source-root: src
 
