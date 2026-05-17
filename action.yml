@@ -1,41 +1,41 @@
-name: 'Publish Crates'
-description: 'Publish Rust crates using cargo-workspaces'
+name: "Cargo Publish Workspaces"
+description: "Publish Rust crates using cargo-workspaces"
 
 inputs:
   token:
-    description: 'GitHub API token'
+    description: "GitHub API token"
     required: false
     default: ${{ github.token }}
   path:
-    description: 'Path to crate or workspace'
+    description: "Path to crate or workspace"
     required: false
-    default: '.'
+    default: "."
   args:
-    description: 'Extra arguments for cargo publish command'
+    description: "Extra arguments for cargo publish command"
     required: false
   registry-token:
-    description: 'Cargo registry token'
+    description: "Cargo registry token"
     required: false
   dry-run:
-    description: 'Set to true to bypass exec cargo publish'
+    description: "Set to true to bypass exec cargo publish"
     required: false
-    default: 'false'
+    default: "false"
   check-repo:
-    description: 'Set to false to bypass check local packages for modifications since last published version'
+    description: "Set to false to bypass check local packages for modifications since last published version"
     required: false
-    default: 'true'
+    default: "true"
   publish-delay:
-    description: 'Optional delay in milliseconds applied after publishing each package before publishing others'
+    description: "Optional delay in milliseconds applied after publishing each package before publishing others"
     required: false
   no-verify:
-    description: 'Set to true to bypass cyclic dependency detection and cargo packaging verification (uses --no-verify)'
+    description: "Set to true to bypass cyclic dependency detection and cargo packaging verification (uses --no-verify)"
     required: false
-    default: 'false'
+    default: "false"
   ignore-unpublished-changes:
-    description: 'Set to true to exit the workflow gracefully if package does not have a new version to publish'
+    description: "Set to true to exit the workflow gracefully if package does not have a new version to publish"
     required: false
-    default: 'false'
+    default: "false"
 
 runs:
-  using: 'node20'
-  main: 'dist/index.js'
+  using: "node20"
+  main: "dist/index.js"
