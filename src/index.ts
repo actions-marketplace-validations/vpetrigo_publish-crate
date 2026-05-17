@@ -50,8 +50,8 @@ export async function checkForModifiedPackages(
 
 export async function run(): Promise<void> {
   try {
-    const token = core.getInput("token", { required: true });
-    const registryToken = core.getInput("registry-token", { required: true });
+    const token = core.getInput("token");
+    const registryToken = core.getInput("registry-token");
     let cratePath = core.getInput("path");
     const args = core.getInput("args");
     const dryRun = core.getBooleanInput("dry-run");
@@ -61,6 +61,16 @@ export async function run(): Promise<void> {
     const ignoreUnpublishedChanges = core.getBooleanInput(
       "ignore-unpublished-changes",
     );
+
+    if (!dryRun) {
+      if (!token) {
+        core.warning("GitHub API token is not set.");
+      }
+
+      if (!registryToken) {
+        core.warning("crates.io token is not set. Publishing may fail.");
+      }
+    }
 
     if (!cratePath || cratePath === "") {
       cratePath = ".";
